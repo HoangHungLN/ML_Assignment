@@ -22,6 +22,11 @@ export interface Section {
   content: string;
 }
 
+export interface GroupActivities {
+  title: string;
+  url: string;
+}
+
 export interface ParsedReadme {
   courseInfo: CourseInfo;
   lecturer: Lecturer;
@@ -31,6 +36,7 @@ export interface ParsedReadme {
   assignment2: string;
   assignment3: string;
   extension: string;
+  groupActivities: GroupActivities | null;
   extraSections: Section[];
 }
 
@@ -73,9 +79,11 @@ export const parseReadme = (markdown: string): ParsedReadme => {
     });
   }
 
-  // Extract sections by headings
+  // Extract sections by headings - improved to capture all content
   const getSection = (heading: string): string => {
-    const regex = new RegExp(`## ${heading}([\\s\\S]*?)(?=##|$)`, 'i');
+    // Find the heading and capture everything until the next ## heading or end of file
+    const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`##\\s+${escapedHeading}\\s*\\n([\\s\\S]*?)(?=\\n##\\s+[^#]|$)`, 'i');
     const match = markdown.match(regex);
     return match?.[1]?.trim() || '';
   };
@@ -85,6 +93,13 @@ export const parseReadme = (markdown: string): ParsedReadme => {
   const assignment2 = getSection('Assignment 2');
   const assignment3 = getSection('Assignment 3');
   const extension = getSection('Phần mở rộng');
+
+  // Extract group activities with link
+  const groupActivitiesMatch = markdown.match(/Hoạt động nhóm:\s*\*\*\[(.+?)\]\((.+?)\)\*\*/);
+  const groupActivities = groupActivitiesMatch ? {
+    title: groupActivitiesMatch[1],
+    url: groupActivitiesMatch[2]
+  } : null;
 
   // Extract extra sections
   const extraSections: Section[] = [
@@ -104,6 +119,7 @@ export const parseReadme = (markdown: string): ParsedReadme => {
     assignment2,
     assignment3,
     extension,
+    groupActivities,
     extraSections
   };
 };

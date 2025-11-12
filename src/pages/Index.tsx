@@ -70,6 +70,25 @@ const Index = () => {
       
       <ExtraSections sections={data.extraSections} />
       
+      {/* Group Activities */}
+      {data.groupActivities && (
+        <div className="container mx-auto px-6 py-6">
+          <div className="text-center">
+            <p className="text-lg text-foreground/80">
+              <span className="text-muted-foreground">Hoạt động nhóm:</span>{" "}
+              <a
+                href={data.groupActivities.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:text-primary/80 underline transition-colors"
+              >
+                {data.groupActivities.title}
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
+      
       {/* Footer */}
       <footer className="container mx-auto px-6 py-8 border-t border-border/50">
         <div className="text-center text-sm text-muted-foreground">

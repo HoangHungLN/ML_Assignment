@@ -5,9 +5,10 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // For GitHub Pages: set base to your repo name if deploying to username.github.io/repo-name
-  // Leave as '/' if deploying to custom domain or username.github.io
-  base: process.env.GITHUB_PAGES ? '/MachineLearning_Assignment/' : '/',
+  // QUAN TRỌNG: Thay 'ml-readme-viewer-63046d6a' bằng tên repository thực tế của bạn
+  // Ví dụ: nếu repo là 'my-project' thì dùng '/my-project/'
+  // Nếu deploy lên username.github.io (custom domain) thì để '/'
+  base: process.env.GITHUB_PAGES ? '/ml-readme-viewer-63046d6a/' : '/',
   server: {
     host: "::",
     port: 8080,

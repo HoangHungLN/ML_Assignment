@@ -1,6 +1,7 @@
 import { CourseInfo, Lecturer, TeamMember } from "@/utils/markdownParser";
-import { GraduationCap, Users, Mail } from "lucide-react";
+import { GraduationCap, Users, Mail, Github } from "lucide-react";
 import { Card } from "./ui/card";
+import { Button } from "./ui/button";
 
 interface HeroProps {
   courseInfo: CourseInfo;
@@ -32,6 +33,22 @@ export const Hero = ({ courseInfo, lecturer, teamMembers }: HeroProps) => {
           <p className="text-xl text-muted-foreground">
             {courseInfo.className} • {courseInfo.semester}, {courseInfo.academicYear}
           </p>
+          <div className="mt-6">
+            <Button
+              asChild
+              size="lg"
+              className="gap-2 bg-primary hover:bg-primary/90"
+            >
+              <a
+                href="https://github.com/HoangHungLN/MachineLearning_Assignment"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Github className="w-5 h-5" />
+                GitHub Repository
+              </a>
+            </Button>
+          </div>
         </div>
 
         {/* Lecturer */}

@@ -82,8 +82,9 @@ export const parseReadme = (markdown: string): ParsedReadme => {
   // Extract sections by headings - improved to capture all content
   const getSection = (heading: string): string => {
     // Find the heading and capture everything until the next ## heading or end of file
+    // Updated to support headings with subtitles (e.g., "Assignment 3: Something")
     const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`##\\s+${escapedHeading}\\s*\\n([\\s\\S]*?)(?=\\n##\\s+[^#]|$)`, 'i');
+    const regex = new RegExp(`##\\s+${escapedHeading}(?::|\\s|$)([\\s\\S]*?)(?=\\n##\\s+[^#]|$)`, 'i');
     const match = markdown.match(regex);
     return match?.[1]?.trim() || '';
   };

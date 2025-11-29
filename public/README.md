@@ -129,7 +129,8 @@ Dataset đã được push lên GitHub, đã được cấu hình sẵn trong no
     - In ra **classification report** gồm *precision*, *recall*, *f1-score* cho từng lớp.  
  
 -----
-## Assignment 3
+## Assignment 3: Human Action Recognition
+
 ### Mục tiêu bài tập
 
   1. Xử lý dữ liệu ảnh đầu vào
@@ -160,72 +161,95 @@ Dataset đã được push lên GitHub, đã được cấu hình sẵn trong no
        * Giữa các mô hình phân loại cổ điển.
        * Ảnh hưởng của chuẩn hóa và PCA lên hiệu năng.
      * Chọn ra cấu hình mô hình tối ưu và phân tích kết quả bằng báo cáo phân loại (classification report).
-    
-### Dataset
 
-  * Tên: **Human Action Recognition (HAR) – 15 Human Activities**
-  * Nguồn: [Kaggle Link](https://www.kaggle.com/datasets/meetnagadia/human-action-recognition-har-dataset)
-  * Mô tả:
-    * ~12.600 ảnh huấn luyện và ~5.400 ảnh test.  
-    * Mỗi ảnh thuộc đúng **1 trong 15 lớp hành động**:
-      `calling, clapping, cycling, dancing, drinking, eating, fighting, hugging, laughing, listening_to_music, running, sitting, sleeping, texting, using_laptop`.  
-    * Ảnh được chụp trong nhiều bối cảnh khác nhau, độ đa dạng cao về góc chụp, môi trường và đối tượng, phù hợp cho bài toán phân loại hành động người từ ảnh tĩnh. :contentReference[oaicite:0]{index=0}
-  * Mục tiêu: xây dựng hệ thống nhận dạng hành động con người từ ảnh tĩnh dựa trên đặc trưng trích xuất từ các mô hình CNN pretrained kết hợp với các mô hình học máy cổ điển.
+### Quy trình thực hiện
 
-Cách tải dataset trong Colab:  
-Dataset (bao gồm ảnh và file `Training_set.csv`) đã được cấu hình sẵn trong notebook để đảm bảo sẽ tự động tải / đọc từ thư mục `Assignment3/data/` sau khi nhấn **Runtime → Run all**.
+**EDA → Tiền xử lý → Trích xuất đặc trưng → Huấn luyện mô hình → Phân tích & đánh giá**
 
-* * *
-### Mô tả các module
+### Human Action Dataset
 
-  * `preprocessor.py`  
-    Chứa hàm `preprocessing(...)` chịu trách nhiệm:
-    * Đọc file CSV chứa tên file và nhãn (`filename`, `label`).
-    * Ghép đường dẫn đầy đủ đến ảnh từ thư mục `image_dir`.
-    * Chia dữ liệu thành `train / val / test` với stratified split.
-    * Áp dụng hàm `preprocess_input` tương ứng với từng mô hình (**VGG16**, **ResNet50**, **EfficientNetB0**) để chuẩn hóa ảnh.
-    * Tạo các `tf.data.Dataset` cho train, val, test với batching và prefetch để tăng tốc huấn luyện. :contentReference[oaicite:1]{index=1}
+![Một số ảnh mẫu](./images/MotSoAnhMau.png)
 
-  * `feature_extractor.py`  
-    Định nghĩa hàm `run_extraction(model_name, data_pipeline, output_dir)`:
-    * Khởi tạo backbone CNN tương ứng với `model_name`:
-      * `resnet50` → `tf.keras.applications.ResNet50`
-      * `vgg16` → `tf.keras.applications.VGG16`
-      * `efficientnetb0` → `tf.keras.applications.EfficientNetB0`
-    * Đóng băng trọng số và gắn thêm tầng `GlobalAveragePooling2D` tạo thành feature extractor.
-    * Lặp qua từng batch trong `train / val / test`:
-      * Chạy forward (inference mode) để lấy vector đặc trưng.
-      * Gom các batch lại thành ma trận `X_split` và vector nhãn `y_split`.
-    * Lưu kết quả ra các file:
-      * `X_train.npy`, `y_train.npy`
-      * `X_val.npy`, `y_val.npy`
-      * `X_test.npy`, `y_test.npy` trong thư mục `output_dir`. :contentReference[oaicite:2]{index=2}
+Tập dữ liệu phân loại hành động của con người, gồm **12,600 ảnh huấn luyện** và **5,400 ảnh test**. Đây là những hành động thường ngày của con người.
 
-  * `run_model.py`  
-    Cài đặt các hàm huấn luyện và đánh giá mô hình học máy cổ điển:
-    * `run_models(Xtr, ytr, Xva, yva, Xte, yte, model_params, print_reports=True, pca=False, normalize=False)`:
-      * Xây dựng và huấn luyện các mô hình:
-        * **RandomForestClassifier**
-        * **LogisticRegression**
-        * **LinearSVC**
-        * **SVC**
-      * Tùy chọn:
-        * Chuẩn hóa đặc trưng bằng `StandardScaler` hoặc `Normalizer`.
-        * Giảm chiều bằng **PCA** với `n_components=0.95`.
-      * Trả về dictionary chứa mô hình đã huấn luyện và validation accuracy cho từng phương án.
-    * `evaluate_model_on_test(model, Xte, yte, model_name)`:
-      * Đánh giá mô hình tốt nhất trên tập test.
-      * In ra **Test Accuracy** và `classification_report` (precision, recall, f1-score cho từng lớp). :contentReference[oaicite:3]{index=3}
+![Phân phối số lượng ảnh](./images/PhanPhoiSoLuongAnh.png)
 
-  * `Assignment3_CEML2.ipynb`  
-    Notebook chính để:
-    * Cấu hình tham số (chọn backbone CNN, mô hình phân loại, bật/tắt chuẩn hóa & PCA).
-    * Gọi lần lượt:
-      * `preprocessing(...)` → tạo pipeline dữ liệu ảnh.
-      * `run_extraction(...)` → sinh đặc trưng và lưu `.npy`.
-      * `run_models(...)` → huấn luyện nhiều mô hình trên đặc trưng đã trích xuất.
-      * `evaluate_model_on_test(...)` → đánh giá mô hình tốt nhất trên tập test.
-    * Tổng hợp và trực quan hóa kết quả thí nghiệm (bảng so sánh accuracy, báo cáo chi tiết theo lớp).
+Tập dữ liệu được chia thành **15 lớp hành động** với **840 ảnh mỗi lớp**, giúp mô hình tránh được hiện tượng **bias** (thiên kiến) về phía lớp phân loại có nhiều mẫu hơn.
+
+#### Thống kê kích thước ảnh cho 500 ảnh mẫu đại diện cho tập dữ liệu:
+
+|       | width      | height     | channels |
+|-------|------------|------------|----------|
+| count | 500.000000 | 500.000000 | 500.0    |
+| mean  | 260.646000 | 195.020000 | 3.0      |
+| std   | 42.399435  | 35.619448  | 0.0      |
+| min   | 84.000000  | 84.000000  | 3.0      |
+| 25%   | 259.000000 | 181.000000 | 3.0      |
+| 50%   | 275.000000 | 183.000000 | 3.0      |
+| 75%   | 276.000000 | 194.000000 | 3.0      |
+| max   | 399.000000 | 300.000000 | 3.0      |
+
+**Nhận xét:**
+- Các ảnh đều có **3 kênh màu (RGB)**, giúp các mô hình học được các đặc trưng liên quan đến hành động tốt hơn.
+- Kích thước các ảnh không đồng đều, cần được **resize** trước khi đưa vào mô hình.
+
+### Tiền xử lý
+
+- Trước khi vào pipeline, tập dữ liệu ban đầu được chia thành các tập **train, validation và test**.
+- **Resize** kích thước ảnh về **224×224** - kích thước chuẩn cho các mô hình pre-trained mà nhóm sử dụng để trích xuất đặc trưng.
+- **Chuẩn hóa** cũng được áp dụng để mô hình xử lý nhanh hơn.
+
+### Trích xuất đặc trưng
+
+- Sử dụng các mô hình **CNN pre-trained**: **VGG16**, **ResNet50**, **EfficientNetB0**.
+- Các vector đặc trưng được lưu vào các file `.npy` trong thư mục tương ứng với mô hình được sử dụng để trích xuất.
+
+**Cấu trúc thư mục:**
+```
+├── features_output/
+    ├── efficientnetb0/     # các file .npy trích xuất từ EfficientNetB0
+    ├── resnet50/           # các file .npy trích xuất từ ResNet50
+    └── vgg16/              # các file .npy trích xuất từ VGG16
+```
+
+### Kết quả huấn luyện
+
+- Các mô hình phân loại được sử dụng: **Random Forest**, **Logistic Regression**, **Linear SVC** và **SVC với kernel RBF**.
+- Sau khi train các mô hình với nhiều bộ tham số khác nhau, nhóm thu được các mô hình với độ chính xác cao nhất tương ứng với từng loại mô hình và phương pháp trích xuất đặc trưng như sau:
+
+![Biểu đồ so sánh độ chính xác](./images/BieuDoSoSanhDoChinhXac.png)
+
+#### Các tham số tốt nhất tương ứng cho từng mô hình:
+
+| Mô hình (Classifier) | Backbone (Trích xuất) | Độ chính xác (Accuracy) | Tham số tốt nhất (Best Parameters) |
+|----------------------|------------------------|-------------------------|-------------------------------------|
+| **Random Forest** | VGG16 | 60.0% | `n_estimators: 200, max_depth: 20, min_samples_leaf: 3` |
+| | ResNet50 | 65.2% | `n_estimators: 200, max_depth: 20, min_samples_leaf: 3` |
+| | EfficientNetB0 | 68.8% | `n_estimators: 200, max_depth: None, min_samples_leaf: 1` |
+| **Logistic Regression** | VGG16 | 68.4% | `C: 4.0, solver: lbfgs, max_iter: 4000` |
+| | ResNet50 | 72.9% | `C: 4.0, solver: lbfgs, max_iter: 4000` |
+| | EfficientNetB0 | 74.0% | `C: 3.0, solver: lbfgs, max_iter: 3000` |
+| **Linear SVC** | VGG16 | 66.1% | `C: 1.0, max_iter: 10000` |
+| | ResNet50 | 74.3% | `C: 1.0, max_iter: 10000` |
+| | EfficientNetB0 | 75.1% | `C: 1.0, max_iter: 10000` |
+| **SVC (RBF)** | VGG16 | 70.8% | `C: 2.0, kernel: rbf, gamma: scale` |
+| | ResNet50 | 74.6% | `C: 3.0, kernel: rbf, gamma: scale` |
+| | EfficientNetB0 | 77.6% | `C: 5.0, kernel: rbf, gamma: scale` |
+
+### Nhận xét và đánh giá
+
+- **Linear SVC & Logistic Regression**: Kết quả tương đồng và khá tốt (~75%), chứng tỏ phần lớn dữ liệu sau khi qua CNN đã được phân tách tuyến tính rõ ràng.
+- **Random Forest** bị yếu thế hơn so với 3 mô hình còn lại. Random Forest hoạt động kém hiệu quả trên dữ liệu vector đặc trưng số thực mật độ cao trích xuất từ CNN và cơ chế cắt không hiệu quả đối với vector đặc trưng này.
+- **SVC (RBF)**: Đạt hiệu quả cao nhất nhờ khả năng xử lý biên quyết định phi tuyến tính, bao quát tốt các điểm dữ liệu phức tạp.
+- Trích xuất đặc trưng với **EfficientNetB0** tỏ ra hiệu quả nhất khi luôn dẫn đầu trong 3 phương pháp bất kể mô hình nào.
+- **VGG16**: Kiến trúc kém hiệu quả khi tạo ra vector đặc trưng số chiều lớn nhưng chứa nhiều nhiễu, dẫn đến độ chính xác thấp nhất và tốn kém tài nguyên.
+
+### Tóm tắt kết quả
+
+- **SVC (RBF)** là mô hình mạnh mẽ nhất, đạt độ chính xác **77.6%** khi sử dụng **EfficientNetB0**.
+- **Linear SVC** cho kết quả gần giống SVC, nhưng với thời gian huấn luyện nhanh hơn.
+- **Logistic Regression** có hiệu suất khá tốt nhưng không mạnh mẽ như SVC.
+- **Random Forest** cho kết quả thấp nhất, đặc biệt khi sử dụng VGG16 và ResNet50.
 -----
 ## Phần mở rộng
 

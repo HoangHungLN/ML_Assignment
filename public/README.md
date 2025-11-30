@@ -293,6 +293,54 @@ Cách tải dataset trong Colab:
 
 * * *
 
+### Forward Algorithm
+
+#### Tổng quan về giải thuật
+
+Giải thuật Forward tính xác suất $P(O|\lambda)$, là xác suất để mô hình HMM ($\lambda$) sinh ra chuỗi quan sát $O$ (chuỗi các từ trong câu).
+
+#### Kết quả trên tập dữ liệu
+
+![Forward Algorithm Results](/images/Forward.png)
+
+**1. Các câu có xác suất cao nhất**
+
+10 câu có xác suất cao nhất đều là các câu cực kỳ ngắn (1-2 từ). Đáng chú ý nhất, các câu có xác suất cao tuyệt đối là "UNK ." và "UNK UNK".
+
+Hiện tượng thiên vị về độ dài thể hiện rõ rệt. Các câu càng ngắn thì càng có xác suất lớn. Hiện tượng trên là do giải thuật Forward tính xác suất cuối cùng P(O) bằng cách nhân liên tiếp các xác suất tại mỗi bước thời gian. Vì tất cả các xác suất đều nhỏ hơn 1.0, về mặt toán học, câu càng ngắn thì càng ít phép nhân dẫn xác suất cuối cùng càng cao.
+
+Bên cạnh đó, vì xử lý những từ hiếm bằng cách thay thế từ hiếm đó bằng <UNK>, khiến cho <UNK> trở thành từ phổ biến trong từ điển, dẫn đến xác suất sinh ra UNK tại các trạng thái trở nên lớn hơn.
+
+**2. Các câu có xác suất thấp nhất**
+
+10 câu có xác suất thấp nhất đều là các câu rất dài (50–70+ từ), và chứa nhiều UNK cùng cấu trúc phức tạp.
+
+Đây cũng là kết quả của hiện tượng thiên vị về độ dài, khi các từ có độ dài càng cao thì số lượng phép nhân cho số bé hơn 1 càng nhiều, dẫn đến giá trị xác suất trở nên rất bé.
+
+Bên cạnh đó các câu này còn có cấu trúc ngữ pháp phức tạp hơn, khiến cho ma trận chuyển tiếp A chứa các giá trị chuyển trạng thái rất nhỏ khi gặp cấu trúc này.
+
+#### So sánh xác suất giữa các câu
+
+![Probability Comparison](/images/Forward2.png)
+
+Có sự mâu thuẫn ở cặp câu thứ 2 khi cặp đúng ngữ pháp trong thực tế hơn lại có xác suất nhỏ hơn trong mô hình. Điều này được giải thích do xác suất phát xạ.
+
+![Emission Probability](/images/Forward3.png)
+
+#### Đánh giá và nhận xét
+
+Mô hình HMM có thể giải thích về cấu trúc ngữ pháp cho câu, khi với cùng độ dài, một câu có xác suất xảy ra cao hơn thì sẽ có cấu trúc ngữ pháp phù hợp hơn trong mô hình đang xét. Tuy nhiên, mô hình vẫn còn rất nhiều hạn chế như cách xử lý các từ hiếm quá thô sơ hay hiện tượng thiên vị độ dài.
+
+Với mô hình HMM hiện tại còn gặp hiện tượng thiên vị tần suất từ. Do sự chênh lệch quá lớn trong Xác suất Phát xạ giữa từ phổ biến và từ hiếm, mô hình có xu hướng ưu tiên các câu chứa từ thông dụng hơn là các câu đúng cấu trúc ngữ pháp nhưng chứa từ ít gặp.
+
+Ta có thể hạn chế được điểm yếu thiên vị độ dài bằng cách sử dụng chuẩn hóa xác suất của một chuỗi quan sát bằng cách chia cho độ dài câu. Hay cải tiến cách xử lý từ hiếm bằng phương pháp Subword Tokenization.
+
+Sử dụng các phương pháp làm mịn nâng cao (như Good-Turing hoặc Witten-Bell) thay vì Laplace đơn giản để ước lượng tốt hơn xác suất cho các từ hiếm (Rare words) và từ chưa biết (OOV).
+
+Hoặc đơn giản hơn, ta sử dụng các mô hình hiện đại hơn và thông minh hơn trong việc xử lý chuỗi chẳng hạn như mạng Neuron.
+
+* * *
+
 ### Mô tả các module
 
 - `forward_algorithm.py`  

@@ -301,7 +301,7 @@ Giải thuật Forward tính xác suất $P(O|\lambda)$, là xác suất để m
 
 #### Kết quả trên tập dữ liệu
 
-![Forward Algorithm Results](/images/Forward.png)
+![Forward Algorithm Results](./images/Forward.png)
 
 **1. Các câu có xác suất cao nhất**
 
@@ -321,11 +321,11 @@ Bên cạnh đó các câu này còn có cấu trúc ngữ pháp phức tạp h�
 
 #### So sánh xác suất giữa các câu
 
-![Probability Comparison](/images/Forward2.png)
+![Probability Comparison](./images/Forward2.png)
 
 Có sự mâu thuẫn ở cặp câu thứ 2 khi cặp đúng ngữ pháp trong thực tế hơn lại có xác suất nhỏ hơn trong mô hình. Điều này được giải thích do xác suất phát xạ.
 
-![Emission Probability](/images/Forward3.png)
+![Emission Probability](./images/Forward3.png)
 
 #### Đánh giá và nhận xét
 

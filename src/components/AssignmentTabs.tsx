@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card } from "./ui/card";
+import { MLPresentation } from "./MLPresentation";
 
 interface AssignmentTabsProps {
   assignment1: string;
@@ -43,13 +44,19 @@ export const AssignmentTabs = ({
 
         {assignments.map((assignment) => (
           <TabsContent key={assignment.id} value={assignment.id} className="mt-8">
-            <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
-              <div className="markdown-content">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {assignment.content || "*Nội dung đang được cập nhật...*"}
-                </ReactMarkdown>
-              </div>
-            </Card>
+            {assignment.id === "assignment1" ? (
+              <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
+                <MLPresentation />
+              </Card>
+            ) : (
+              <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
+                <div className="markdown-content">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {assignment.content || "*Nội dung đang được cập nhật...*"}
+                  </ReactMarkdown>
+                </div>
+              </Card>
+            )}
           </TabsContent>
         ))}
       </Tabs>

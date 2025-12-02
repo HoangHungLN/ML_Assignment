@@ -75,7 +75,7 @@ export const MLPresentation = () => {
           {/* Card 1 - KNN Imputer */}
           <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300">
             <CardHeader>
-              <CardTitle className="text-2xl text-foreground">Chiến Lược Điền Dữ Liệu</CardTitle>
+              <CardTitle className="text-2xl text-foreground">Xử lý dữ liệu khuyết (Imputation)</CardTitle>
               <CardDescription className="text-muted-foreground">KNN Imputer</CardDescription>
             </CardHeader>
             <CardContent>
@@ -93,7 +93,7 @@ export const MLPresentation = () => {
           {/* Card 2 - PCA Strategy */}
           <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300">
             <CardHeader>
-              <CardTitle className="text-2xl text-foreground">Giảm Chiều Dữ Liệu</CardTitle>
+              <CardTitle className="text-2xl text-foreground">Trích xuất đặc trưng & Giảm chiều dữ liệu</CardTitle>
               <CardDescription className="text-muted-foreground">PCA Strategy</CardDescription>
             </CardHeader>
             <CardContent>
@@ -154,7 +154,7 @@ export const MLPresentation = () => {
         <div className="flex items-center gap-3 mb-6">
           <TrendingUp className="w-6 h-6 text-primary" />
           <h2 className="text-3xl font-bold text-foreground">
-            So Sánh Hiệu Năng Mô Hình
+            Đánh giá hiệu năng mô hình (Model Benchmarking)
           </h2>
         </div>
 
@@ -214,7 +214,7 @@ export const MLPresentation = () => {
               <div className="p-4 bg-[hsl(var(--code-bg))] border border-primary/50 rounded-lg ring-2 ring-[hsl(var(--ai-glow))]/50">
                 <div className="text-sm text-[hsl(var(--ai-glow))] mb-1 font-semibold">Random Forest ⭐</div>
                 <div className="text-2xl font-bold text-[hsl(var(--ai-glow))] mb-2">87.7%</div>
-                <div className="text-xs text-muted-foreground">Model tốt nhất. Kiến trúc Ensemble xử lý tốt quan hệ phức tạp giữa cấu hình và giá bán</div>
+                <div className="text-xs text-muted-foreground">Model tối ưu nhất. Kiến trúc Ensemble xử lý tốt quan hệ phức tạp giữa cấu hình và giá bán</div>
               </div>
             </div>
           </CardContent>

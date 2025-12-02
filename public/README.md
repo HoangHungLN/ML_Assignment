@@ -127,7 +127,46 @@ Dataset đã được push lên GitHub, đã được cấu hình sẵn trong no
   - `evaluate_model_on_test(model, Xte, yte, model_name)`  
     - Đánh giá mô hình tốt nhất trên tập test.  
     - In ra **classification report** gồm *precision*, *recall*, *f1-score* cho từng lớp.  
- 
+
+### BÁO CÁO ĐÁNH GIÁ MÔ HÌNH PHÂN LOẠI SỰ CỐ IT
+
+#### 1. Các phương pháp trích xuất đặc trưng (Feature Extraction)
+
+Trong dự án này, ba phương pháp trích xuất đặc trưng chính đã được triển khai để chuyển đổi văn bản thành vector số học:
+
+- **Bag of Words (BoW)**: Sử dụng `CountVectorizer` để đếm tần suất xuất hiện của từ. Phương pháp này đơn giản, hiệu quả với văn bản chứa từ khóa kỹ thuật nhưng tạo ra ma trận thưa.
+- **TF–IDF**: Đánh trọng số cho từ dựa trên độ phổ biến cục bộ và độ hiếm toàn cục. Giúp mô hình tập trung vào các từ khóa mang tính phân loại cao, giảm ảnh hưởng của các từ quá phổ biến.
+- **TF–IDF Weighted GloVe**: Kết hợp vector ngữ nghĩa từ GloVe (pre-trained) và trọng số TF–IDF. Mục tiêu là nắm bắt ngữ nghĩa sâu hơn, tuy nhiên có thể gặp hạn chế với các thuật ngữ chuyên ngành IT đặc thù.
+
+#### 2. Đánh giá hiệu quả mô hình
+
+Biểu đồ dưới đây so sánh độ chính xác (Accuracy) của các mô hình **Logistic Regression**, **SVM** và **Naive Bayes** trên tập kiểm thử (Test Set) với các phương pháp trích xuất đặc trưng khác nhau:
+
+![Biểu đồ so sánh kết quả các mô hình phân loại sự cố IT](images/assignment2_model_comparison.png)
+
+_Hình 1. Biểu đồ so sánh độ chính xác của các mô hình Logistic Regression, SVM và Naive Bayes với các phương pháp trích xuất đặc trưng BoW, TF–IDF và TF–IDF Weighted GloVe trên tập kiểm thử._
+
+#### 3. Kết luận và giải thích
+
+- **Mô hình tốt nhất**: Logistic Regression kết hợp với Bag of Words (BoW).  
+- **Độ chính xác đạt được**: 86.50%  
+- **Tham số tối ưu**: `C = 0.1`, `max_iter = 1000`.
+
+**Lý do đạt kết quả tốt nhất:**
+
+- **Đặc thù dữ liệu IT Tickets**: Các phiếu hỗ trợ thường ngắn và chứa các từ khóa chuyên ngành (ví dụ: `vpn`, `password`, `server`). BoW bảo tồn nguyên vẹn sự hiện diện của các từ khóa này, giúp mô hình bắt tín hiệu tốt hơn so với việc trung bình hóa vector ngữ nghĩa (như GloVe).
+- **Sức mạnh của mô hình tuyến tính**: Logistic Regression hoạt động rất hiệu quả trên không gian đặc trưng thưa và số chiều lớn (*high-dimensional sparse data*) do BoW tạo ra.
+- **Regularization hiệu quả**: Tham số `C = 0.1` (regularization mạnh) giúp mô hình tránh overfitting khi phải xử lý số lượng đặc trưng lớn (khoảng 20.000 từ), từ đó tổng quát hóa tốt hơn trên tập kiểm thử.
+
+#### 4. Tại sao phương pháp truyền thống (BoW) lại đánh bại phương pháp hiện đại (GloVe)?
+
+Mặc dù GloVe là phương pháp nhúng từ (*word embedding*) hiện đại, nhưng trong bài toán cụ thể này, nó cho kết quả thấp hơn đáng kể (~78%) so với BoW (~86%). Một số nguyên nhân chính:
+
+- **Lệch miền dữ liệu (Domain mismatch)**  
+  - GloVe được huấn luyện trước (*pre-trained*) trên các tập dữ liệu văn bản phổ thông như Wikipedia hoặc tin tức. Nó rất giỏi hiểu các từ ngữ giao tiếp thường ngày.  
+  - Dữ liệu IT Tickets lại chứa nhiều thuật ngữ chuyên ngành hẹp (jargon), mã lỗi hệ thống và từ viết tắt (ví dụ: `bios`, `ipv4`, `bsod`, `dhcp`).  
+  - Hệ quả: GloVe coi các từ khóa quan trọng này là *out-of-vocabulary* hoặc không nắm bắt đúng ngữ nghĩa kỹ thuật. Trong khi đó, BoW học trực tiếp từ bộ từ vựng của chính tập dữ liệu, nên bắt trọn vẹn được những từ khóa "đắt giá" nhất cho bài toán phân loại sự cố.
+
 -----
 ## Assignment 3: Human Action Recognition
 
@@ -340,6 +379,105 @@ Sử dụng các phương pháp làm mịn nâng cao (như Good-Turing hoặc Wi
 Hoặc đơn giản hơn, ta sử dụng các mô hình hiện đại hơn và thông minh hơn trong việc xử lý chuỗi chẳng hạn như mạng Neuron.
 
 * * *
+### Giải thuật Viterbi
+
+Trong bài toán này, nhóm sử dụng **mô hình Markov ẩn (HMM)** kết hợp với **giải thuật Viterbi** để giải quyết bài toán **gán nhãn từ loại (POS tagging)**.  
+
+- **Quan sát**: các từ trong câu (word sequence).
+- **Trạng thái ẩn**: các nhãn từ loại (POS tags) theo chuẩn **Penn Treebank**.
+- **Mục tiêu của thuật toán Viterbi**: với mỗi câu đầu vào, tìm ra chuỗi nhãn POS có xác suất cao nhất cho toàn bộ câu.
+
+Nói cách khác, Viterbi giúp trả lời câu hỏi:  
+> *“Với câu này, mỗi từ nên được gán nhãn từ loại nào là hợp lý nhất?”*
+
+---
+
+#### Giới thiệu các nhãn POS (Penn Treebank)
+
+Trong bài này, dataset nhóm sử dụng bộ nhãn POS theo chuẩn **Penn Treebank**. Dưới đây là một số nhãn thường gặp:
+
+##### 1. Danh từ (Nouns)
+
+| Tag   | Ý nghĩa                               | Ví dụ                        |
+|-------|---------------------------------------|------------------------------|
+| **NN**   | Danh từ thường, số ít                  | dog, house, book             |
+| **NNS**  | Danh từ thường, số nhiều               | dogs, houses, books          |
+| **NNP**  | Danh từ riêng, số ít                   | John, London, Tuesday        |
+| **NNPS** | Danh từ riêng, số nhiều                | Americans, Europeans         |
+
+##### 2. Động từ (Verbs)
+
+| Tag   | Ý nghĩa                                             | Ví dụ                              |
+|-------|-----------------------------------------------------|------------------------------------|
+| **VB**   | Động từ nguyên mẫu                                | eat, go, run                       |
+| **VBD**  | Động từ quá khứ                                  | ate, went, ran                     |
+| **VBG**  | Hiện tại phân từ / V-ing                         | eating, going, running             |
+| **VBN**  | Quá khứ phân từ                                  | eaten, gone, broken                |
+| **VBP**  | Hiện tại, không ngôi thứ 3 số ít                 | I eat, you go                      |
+| **VBZ**  | Hiện tại, ngôi thứ 3 số ít                       | he eats, she goes                  |
+
+##### 3. Tính từ & Trạng từ
+
+| Tag   | Ý nghĩa                         | Ví dụ                         |
+|-------|---------------------------------|-------------------------------|
+| **JJ**   | Tính từ                         | big, small, happy             |
+| **JJR**  | Tính từ so sánh hơn             | bigger, smaller, happier      |
+| **JJS**  | Tính từ so sánh nhất            | biggest, smallest, happiest   |
+| **RB**   | Trạng từ                        | quickly, very, well           |
+| **RBR**  | Trạng từ so sánh hơn            | faster, better                |
+| **RBS**  | Trạng từ so sánh nhất           | fastest, best                 |
+
+##### 4. Đại từ, mạo từ, giới từ, liên từ
+
+| Tag    | Ý nghĩa                           | Ví dụ                         |
+|--------|-----------------------------------|--------------------------------|
+| **PRP**   | Đại từ nhân xưng                  | I, you, he, she, they          |
+| **PRP$**  | Đại từ sở hữu                     | my, your, his, her             |
+| **DT**    | Mạo từ / từ hạn định              | a, an, the, this, those        |
+| **IN**    | Giới từ / liên từ phụ thuộc       | in, on, at, of, because, if    |
+| **CC**    | Liên từ đẳng lập                  | and, or, but                   |
+| **TO**    | Từ *to* (trước động từ nguyên mẫu) | to go, to eat                  |
+
+##### 5. Một số nhãn khác
+
+| Tag   | Ý nghĩa                     | Ví dụ                       |
+|-------|-----------------------------|-----------------------------|
+| **MD**   | Trợ động từ khuyết thiếu    | can, will, must, should     |
+| **CD**   | Số từ                      | 10, 20                      |
+| **UH**   | Thán từ                    | oh, wow                     |
+| **. , : ; ? !** | Dấu câu            | . , : ; ? !                 |
+
+Trong mô hình HMM, các nhãn POS ở trên chính là **trạng thái ẩn**, còn các từ trong câu là **chuỗi quan sát**. Nhiệm vụ của Viterbi là tìm ra **chuỗi nhãn ẩn tối ưu** tương ứng với chuỗi từ quan sát được.
+
+---
+
+#### Ví dụ gán nhãn bằng Viterbi
+
+Khi thử một số câu đơn giản, mô hình gán nhãn khá hợp lý:
+
+- Câu gốc: `he loves this subject the most`  
+  Nhãn dự đoán: `PRP VBZ DT NN DT RBS`
+
+- Câu gốc: `he is doing machine learning assignment`  
+  Nhãn dự đoán: `PRP VBZ VBG NN VBG NN`
+
+Mô hình phân biệt đúng các đại từ (**PRP**), động từ chia theo chủ ngữ (**VBZ**), dạng V-ing (**VBG**), mạo từ (**DT**) và trạng từ so sánh nhất (**RBS**).  
+
+Các lỗi chủ yếu xuất hiện ở những cụm mơ hồ như **“machine learning”**, nơi từ *learning* vừa có thể được gán là danh từ (**NN**) vừa có thể là động từ dạng V-ing (**VBG**). Đây là kiểu mơ hồ thường gặp của mô hình HMM khi chỉ dùng ngữ cảnh ngắn.
+
+---
+
+#### Nhận xét kết quả
+
+- **Accuracy trên tập dev ~ 94.8%** – tức là gần 95% số token được gán đúng nhãn POS.
+
+- Phần ~5% còn lại chủ yếu rơi vào:
+  - các từ ít xuất hiện trong tập huấn luyện,
+  - các trường hợp mơ hồ về từ loại (vừa có thể là danh từ, vừa có thể là động từ/tính từ).
+
+Trong các hướng phát triển tiếp theo, có thể cải thiện bằng cách:
+- thêm đặc trưng hình thái (đuôi `-ing`, `-ed`, số nhiều `-s`, viết hoa,…),
+- sử dụng các mô hình gán nhãn hiện đại hơn như **BiLSTM-CRF** hoặc **Transformer-based tagger**.
 
 ### Mô tả các module
 

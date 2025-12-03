@@ -9,6 +9,13 @@ interface HeroProps {
   teamMembers: TeamMember[];
 }
 
+// Mapping tên thành viên -> đường dẫn avatar
+const avatarMap: Record<string, string> = {
+  "Trương Thiên Ân": "/images/an-avatar.jpg",
+  "Lại Nguyễn Hoàng Hưng": "/images/hung-avatar.jpg",
+  "Nguyễn Tô Quốc Việt": "/images/viet-avatar.jpg",
+};
+
 export const Hero = ({ courseInfo, lecturer, teamMembers }: HeroProps) => {
   return (
     <div className="relative overflow-hidden">
@@ -31,7 +38,8 @@ export const Hero = ({ courseInfo, lecturer, teamMembers }: HeroProps) => {
             {courseInfo.title}
           </h1>
           <p className="text-xl text-muted-foreground">
-            {courseInfo.className} • {courseInfo.semester}, {courseInfo.academicYear}
+            {courseInfo.className} • {courseInfo.semester},{" "}
+            {courseInfo.academicYear}
           </p>
           <div className="mt-6">
             <Button
@@ -55,7 +63,9 @@ export const Hero = ({ courseInfo, lecturer, teamMembers }: HeroProps) => {
         <div className="text-center mb-12">
           <p className="text-lg text-foreground/70">
             <span className="text-muted-foreground">Giảng viên:</span>{" "}
-            <span className="font-semibold text-foreground">{lecturer.name}</span>
+            <span className="font-semibold text-foreground">
+              {lecturer.name}
+            </span>
           </p>
         </div>
 
@@ -66,31 +76,52 @@ export const Hero = ({ courseInfo, lecturer, teamMembers }: HeroProps) => {
             <h2 className="text-2xl font-bold text-foreground">Nhóm CEML2</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
-            {teamMembers.map((member, index) => (
-              <Card
-                key={index}
-                className="p-6 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group"
-              >
-                <div className="text-center space-y-3">
-                  <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl font-bold text-primary">
-                      {member.name.charAt(0)}
-                    </span>
+            {teamMembers.map((member, index) => {
+              const avatarSrc = avatarMap[member.name];
+
+              return (
+                <Card
+                  key={index}
+                  className="p-6 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group"
+                >
+                  <div className="text-center space-y-3">
+                    {avatarSrc ? (
+                      // Nếu có avatar trong map -> hiển thị ảnh tròn
+                      <div className="w-16 h-16 mx-auto rounded-full overflow-hidden border border-primary/60 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <img
+                          src={avatarSrc}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      // Không có avatar -> fallback chữ cái đầu như cũ
+                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <span className="text-2xl font-bold text-primary">
+                          {member.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">
+                        {member.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        MSSV: {member.id}
+                      </p>
+                      <a
+                        href={`mailto:${member.email}`}
+                        className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <Mail className="w-4 h-4" />
+                        <span className="truncate">{member.email}</span>
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">{member.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">MSSV: {member.id}</p>
-                    <a
-                      href={`mailto:${member.email}`}
-                      className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span className="truncate">{member.email}</span>
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -51,12 +51,40 @@ export const AssignmentTabs = ({
               </Card>
             ) : assignment.id === "extension" ? (
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
-                <div className="markdown-content">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {assignment.content || "*Nội dung đang được cập nhật...*"}
-                  </ReactMarkdown>
-                </div>
-                <HMMParameterLearning />
+                {(() => {
+                  const content = assignment.content || "*Nội dung đang được cập nhật...*";
+                  const forwardAlgoMatch = content.match(/^([\s\S]*?)(#{1,3}\s*Forward Algorithm[\s\S]*)$/m);
+                  
+                  if (forwardAlgoMatch) {
+                    const [, beforeForward, forwardAndAfter] = forwardAlgoMatch;
+                    return (
+                      <>
+                        <div className="markdown-content">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {beforeForward}
+                          </ReactMarkdown>
+                        </div>
+                        <HMMParameterLearning />
+                        <div className="markdown-content mt-8">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {forwardAndAfter}
+                          </ReactMarkdown>
+                        </div>
+                      </>
+                    );
+                  }
+                  
+                  return (
+                    <>
+                      <div className="markdown-content">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {content}
+                        </ReactMarkdown>
+                      </div>
+                      <HMMParameterLearning />
+                    </>
+                  );
+                })()}
               </Card>
             ) : (
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">

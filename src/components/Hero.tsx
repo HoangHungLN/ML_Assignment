@@ -10,10 +10,13 @@ interface HeroProps {
 }
 
 // Mapping tên thành viên -> đường dẫn avatar
-const avatarMap: Record<string, string> = {
-  "Trương Thiên Ân": "/images/an-avatar.jpg",
-  "Lại Nguyễn Hoàng Hưng": "/images/hung-avatar.jpg",
-  "Nguyễn Tô Quốc Việt": "/images/viet-avatar.jpg",
+const getAvatarMap = (): Record<string, string> => {
+  const base = import.meta.env.BASE_URL;
+  return {
+    "Trương Thiên Ân": `${base}images/an-avatar.jpg`,
+    "Lại Nguyễn Hoàng Hưng": `${base}images/hung-avatar.jpg`,
+    "Nguyễn Tô Quốc Việt": `${base}images/viet-avatar.jpg`,
+  };
 };
 
 export const Hero = ({ courseInfo, lecturer, teamMembers }: HeroProps) => {
@@ -77,7 +80,7 @@ export const Hero = ({ courseInfo, lecturer, teamMembers }: HeroProps) => {
           </div>
           <div className="grid md:grid-cols-3 gap-4">
             {teamMembers.map((member, index) => {
-              const avatarSrc = avatarMap[member.name];
+              const avatarSrc = getAvatarMap()[member.name];
 
               return (
                 <Card

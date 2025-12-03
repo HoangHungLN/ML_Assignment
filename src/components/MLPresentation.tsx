@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { TrendingUp, Layers, Award, Smartphone } from "lucide-react";
+import { TrendingUp, Layers, Award, Smartphone, Database, Target } from "lucide-react";
 
 // Data for PCA Cumulative Explained Variance
 const pcaData = [
@@ -60,6 +60,96 @@ export const MLPresentation = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Dataset Overview & Problem Definition */}
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <Database className="w-6 h-6 text-primary" />
+          <h2 className="text-3xl font-bold text-foreground">
+            Dataset Overview & Problem Definition
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Dataset Info */}
+          <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="text-2xl text-foreground">Dữ liệu gốc</CardTitle>
+              <CardDescription className="text-muted-foreground">Mobile Phone Specifications Dataset</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-[hsl(var(--code-bg))] border border-border/50 rounded-lg">
+                  <span className="text-muted-foreground">Số mẫu (Samples)</span>
+                  <span className="text-2xl font-bold text-primary">11,786</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-[hsl(var(--code-bg))] border border-border/50 rounded-lg">
+                  <span className="text-muted-foreground">Số thuộc tính (Features)</span>
+                  <span className="text-2xl font-bold text-primary">14</span>
+                </div>
+                <p className="text-foreground/80 text-sm leading-relaxed">
+                  Bao gồm các thông số kỹ thuật phần cứng: RAM, Battery, Screen Resolution, Camera Pixels, Internal Memory, Weight, và các thuộc tính khác.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Problem Definition */}
+          <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                <CardTitle className="text-2xl text-foreground">Định nghĩa bài toán</CardTitle>
+              </div>
+              <CardDescription className="text-muted-foreground">Classification vs Regression</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Loại bài toán</div>
+                  <div className="text-xl font-bold text-primary">Multi-class Classification</div>
+                </div>
+                <p className="text-foreground/80 text-sm leading-relaxed">
+                  Mục tiêu là <span className="text-primary font-semibold">Phân loại Phân khúc Giá</span> (Classification), không phải dự đoán giá trị liên tục (Regression). Điều này giúp mô hình tập trung vào việc nhận diện các nhóm giá rời rạc thay vì ước lượng số cụ thể.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Target Variable Transformation */}
+        <Card className="mt-6 bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="text-2xl text-foreground">Chuyển đổi biến mục tiêu (Target Transformation)</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Từ biến liên tục <code className="text-primary">price</code> sang biến phân loại <code className="text-primary">price_category</code>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              <div className="text-center p-4 bg-[hsl(var(--code-bg))] border border-green-500/30 rounded-lg">
+                <div className="text-3xl font-bold text-green-400 mb-1">Low</div>
+                <div className="text-xs text-muted-foreground">≤ Q1 (25th percentile)</div>
+              </div>
+              <div className="text-center p-4 bg-[hsl(var(--code-bg))] border border-yellow-500/30 rounded-lg">
+                <div className="text-3xl font-bold text-yellow-400 mb-1">Medium</div>
+                <div className="text-xs text-muted-foreground">Q1 - Q3 (25th - 75th)</div>
+              </div>
+              <div className="text-center p-4 bg-[hsl(var(--code-bg))] border border-red-500/30 rounded-lg">
+                <div className="text-3xl font-bold text-red-400 mb-1">High</div>
+                <div className="text-xs text-muted-foreground">≥ Q3 (75th percentile)</div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-[hsl(var(--code-bg))] border border-border/50 rounded-lg">
+              <div className="text-sm text-primary font-semibold mb-2">Tại sao sử dụng Quantile Thresholds?</div>
+              <p className="text-foreground/80 text-sm leading-relaxed">
+                Chiến lược phân chia theo <span className="text-primary font-semibold">Ngưỡng Tứ phân vị (Quantile Thresholds)</span> giúp mô hình <span className="text-[hsl(var(--ai-glow))] font-semibold">robust</span> hơn trước sự phân bố lệch (<span className="text-primary">Skewness</span>) và các giá trị ngoại lai (<span className="text-primary">Outliers</span>) của dữ liệu giá gốc. Khác với Fixed Thresholds, Quantile đảm bảo các lớp có phân bố cân bằng hơn, giảm thiểu rủi ro Class Imbalance.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Pipeline Section */}

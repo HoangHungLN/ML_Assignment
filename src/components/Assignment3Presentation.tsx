@@ -35,23 +35,23 @@ import {
   Activity,
 } from "lucide-react";
 
-// Dataset distribution
+// Dataset distribution - 15 classes, training only
 const actionClasses = [
-  { action: "calling", train: 840, test: 360 },
-  { action: "clapping", train: 840, test: 360 },
-  { action: "cycling", train: 840, test: 360 },
-  { action: "dancing", train: 840, test: 360 },
-  { action: "drinking", train: 840, test: 360 },
-  { action: "eating", train: 840, test: 360 },
-  { action: "fighting", train: 840, test: 360 },
-  { action: "hugging", train: 840, test: 360 },
-  { action: "laughing", train: 840, test: 360 },
-  { action: "listening_to_music", train: 840, test: 360 },
-  { action: "running", train: 840, test: 360 },
-  { action: "sitting", train: 840, test: 360 },
-  { action: "sleeping", train: 840, test: 360 },
-  { action: "texting", train: 840, test: 360 },
-  { action: "using_laptop", train: 840, test: 360 },
+  { action: "calling", count: 840 },
+  { action: "clapping", count: 840 },
+  { action: "cycling", count: 840 },
+  { action: "dancing", count: 840 },
+  { action: "drinking", count: 840 },
+  { action: "eating", count: 840 },
+  { action: "fighting", count: 840 },
+  { action: "hugging", count: 840 },
+  { action: "laughing", count: 840 },
+  { action: "listening_to_music", count: 840 },
+  { action: "running", count: 840 },
+  { action: "sitting", count: 840 },
+  { action: "sleeping", count: 840 },
+  { action: "texting", count: 840 },
+  { action: "using_laptop", count: 840 },
 ];
 
 // Classification report data for best model
@@ -73,13 +73,12 @@ const classificationReport = [
   { class: "using_laptop", precision: 0.81, recall: 0.79, f1: 0.8 },
 ];
 
-// Model comparison data
-const modelComparison = [
-  { model: "SVC (RBF) + EfficientNetB0", accuracy: 77.6 },
-  { model: "SVC (RBF) + ResNet50", accuracy: 74.2 },
-  { model: "SVC (RBF) + VGG16", accuracy: 71.8 },
-  { model: "Random Forest + EfficientNetB0", accuracy: 72.5 },
-  { model: "KNN + EfficientNetB0", accuracy: 68.3 },
+// Model comparison data - 4 classifiers x 3 backbones (from reference image)
+const modelComparisonGrouped = [
+  { classifier: "Random Forest", VGG16: 60.0, ResNet50: 65.2, EfficientNetB0: 68.8 },
+  { classifier: "Logistic Regression", VGG16: 68.4, ResNet50: 72.9, EfficientNetB0: 74.0 },
+  { classifier: "Linear SVC", VGG16: 66.1, ResNet50: 74.3, EfficientNetB0: 75.1 },
+  { classifier: "SVC (RBF)", VGG16: 70.8, ResNet50: 74.6, EfficientNetB0: 77.6 },
 ];
 
 const COLORS = [
@@ -216,40 +215,42 @@ export const Assignment3Presentation: React.FC = () => {
           </div>
           <ImageIcon className="w-6 h-6 text-primary" />
         </CardHeader>
-        <CardContent className="h-96">
+        <CardContent className="h-[500px]">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsBarChart
               data={actionClasses}
-              layout="vertical"
-              margin={{ top: 16, right: 24, bottom: 8, left: 130 }}
+              margin={{ top: 16, right: 24, bottom: 60, left: 24 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
-                type="number"
-                stroke="hsl(var(--muted-foreground))"
-                tickFormatter={(value) => value.toLocaleString("en-US")}
-              />
-              <YAxis
-                type="category"
                 dataKey="action"
                 stroke="hsl(var(--muted-foreground))"
-                width={120}
-                tick={{ fontSize: 11 }}
+                fontSize={10}
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
+                tickFormatter={(value) => value.toLocaleString("en-US")}
+                domain={[0, 900]}
               />
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  `${value.toLocaleString("en-US")} ảnh`,
-                  name === "train" ? "Training" : "Test",
-                ]}
+                formatter={(value: number) => [`${value.toLocaleString("en-US")} ảnh`, "Training"]}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   borderColor: "hsl(var(--border))",
                   borderRadius: 8,
                 }}
               />
-              <Legend />
-              <Bar dataKey="train" name="Training" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="test" name="Test" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]} />
+              <Bar 
+                dataKey="count" 
+                name="Training" 
+                fill="hsl(var(--primary))" 
+                radius={[4, 4, 0, 0]}
+                label={{ position: 'top', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+              />
             </RechartsBarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -273,7 +274,7 @@ export const Assignment3Presentation: React.FC = () => {
               { step: 2, title: "Tiền xử lý", desc: "Resize, normalize, augmentation" },
               { step: 3, title: "Feature Extraction", desc: "CNN pre-trained models" },
               { step: 4, title: "Training", desc: "SVC, Random Forest, KNN" },
-              { step: 5, title: "Evaluation", desc: "Accuracy, F1-score, Confusion Matrix" },
+              { step: 5, title: "Evaluation", desc: "Accuracy, F1-score" },
             ].map((item) => (
               <div
                 key={item.step}
@@ -344,11 +345,11 @@ export const Assignment3Presentation: React.FC = () => {
         </Card>
       </div>
 
-      {/* So sánh mô hình */}
+      {/* So sánh mô hình - grouped bar chart */}
       <Card className="bg-card/60 border-border/60">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4">
           <div>
-            <CardTitle className="text-xl">So sánh hiệu năng mô hình</CardTitle>
+            <CardTitle className="text-xl">So sánh độ chính xác (Accuracy) giữa các mô hình và backbone</CardTitle>
             <CardDescription>
               Kết hợp các CNN feature extractor với các classifier khác nhau
             </CardDescription>
@@ -360,43 +361,54 @@ export const Assignment3Presentation: React.FC = () => {
             </span>
           </div>
         </CardHeader>
-        <CardContent className="h-72">
+        <CardContent className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsBarChart
-              data={modelComparison}
-              layout="vertical"
-              margin={{ top: 16, right: 24, bottom: 8, left: 200 }}
+              data={modelComparisonGrouped}
+              margin={{ top: 20, right: 30, bottom: 20, left: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
-                type="number"
-                domain={[60, 85]}
+                dataKey="classifier"
                 stroke="hsl(var(--muted-foreground))"
-                tickFormatter={(value) => `${value}%`}
+                fontSize={11}
               />
               <YAxis
-                type="category"
-                dataKey="model"
+                domain={[50, 85]}
                 stroke="hsl(var(--muted-foreground))"
-                width={190}
-                tick={{ fontSize: 11 }}
+                tickFormatter={(value) => `${value}%`}
+                label={{ value: 'Accuracy %', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: 'hsl(var(--muted-foreground))' } }}
               />
               <Tooltip
-                formatter={(value: number) => [`${value}%`, "Accuracy"]}
+                formatter={(value: number, name: string) => [`${value}%`, name]}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   borderColor: "hsl(var(--border))",
                   borderRadius: 8,
                 }}
               />
-              <Bar dataKey="accuracy" radius={[0, 4, 4, 0]} maxBarSize={28}>
-                {modelComparison.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={index === 0 ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}
-                  />
-                ))}
-              </Bar>
+              <Legend />
+              <Bar 
+                dataKey="VGG16" 
+                name="VGG16" 
+                fill="#4169E1" 
+                radius={[4, 4, 0, 0]}
+                label={{ position: 'top', fontSize: 9, formatter: (v: number) => `${v}%` }}
+              />
+              <Bar 
+                dataKey="ResNet50" 
+                name="ResNet50" 
+                fill="#DAA520" 
+                radius={[4, 4, 0, 0]}
+                label={{ position: 'top', fontSize: 9, formatter: (v: number) => `${v}%` }}
+              />
+              <Bar 
+                dataKey="EfficientNetB0" 
+                name="EfficientNetB0" 
+                fill="#228B22" 
+                radius={[4, 4, 0, 0]}
+                label={{ position: 'top', fontSize: 9, formatter: (v: number) => `${v}%` }}
+              />
             </RechartsBarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -414,86 +426,34 @@ export const Assignment3Presentation: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Nhận xét text */}
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl border border-primary/40 bg-primary/5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Award className="w-5 h-5 text-primary" />
-                  <span className="font-semibold text-foreground">Overall Accuracy: 78%</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Mô hình đạt độ chính xác tổng thể 78% trên tập test với 1,260 mẫu.
-                </p>
+          {/* Nhận xét text */}
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl border border-primary/40 bg-primary/5">
+              <div className="flex items-center gap-2 mb-2">
+                <Award className="w-5 h-5 text-primary" />
+                <span className="font-semibold text-foreground">Overall Accuracy: 78%</span>
               </div>
-              
-              <div className="space-y-2 text-sm">
-                <p className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">Lớp tốt nhất:</span>{" "}
-                  <span className="text-primary font-medium">cycling</span> đạt F1-score 0.99, 
-                  cho thấy đặc trưng hành động đạp xe rất dễ phân biệt.
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">Lớp khó nhất:</span>{" "}
-                  <span className="text-primary font-medium">listening_music</span> chỉ đạt F1-score 0.58, 
-                  có thể do hành động này tương tự với texting hoặc calling.
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">Nhóm lớp tốt:</span>{" "}
-                  eating (0.91), running (0.90), sleeping (0.83), fighting (0.82) - 
-                  các hành động có chuyển động hoặc tư thế đặc trưng rõ ràng.
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Mô hình đạt độ chính xác tổng thể 78% trên tập test với 1,260 mẫu.
+              </p>
             </div>
-
-            {/* F1-Score Chart */}
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsBarChart
-                  data={classificationReport}
-                  layout="vertical"
-                  margin={{ top: 8, right: 24, bottom: 8, left: 110 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    type="number"
-                    domain={[0, 1]}
-                    stroke="hsl(var(--muted-foreground))"
-                    tickFormatter={(value) => value.toFixed(1)}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="class"
-                    stroke="hsl(var(--muted-foreground))"
-                    width={100}
-                    tick={{ fontSize: 10 }}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => [value.toFixed(2), "F1-Score"]}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      borderColor: "hsl(var(--border))",
-                      borderRadius: 8,
-                    }}
-                  />
-                  <Bar dataKey="f1" name="F1-Score" radius={[0, 4, 4, 0]} maxBarSize={20}>
-                    {classificationReport.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          entry.f1 >= 0.9
-                            ? "hsl(var(--primary))"
-                            : entry.f1 >= 0.75
-                            ? "hsl(var(--accent))"
-                            : entry.f1 >= 0.65
-                            ? "hsl(var(--ai-glow))"
-                            : "hsl(var(--muted-foreground))"
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </RechartsBarChart>
-              </ResponsiveContainer>
+            
+            <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="p-3 rounded-lg bg-card/80 border border-border/40">
+                <span className="font-semibold text-foreground">Lớp tốt nhất:</span>{" "}
+                <span className="text-primary font-medium">cycling</span> đạt F1-score 0.99, 
+                cho thấy đặc trưng hành động đạp xe rất dễ phân biệt.
+              </div>
+              <div className="p-3 rounded-lg bg-card/80 border border-border/40">
+                <span className="font-semibold text-foreground">Lớp khó nhất:</span>{" "}
+                <span className="text-primary font-medium">listening_music</span> chỉ đạt F1-score 0.58, 
+                có thể do hành động này tương tự với texting hoặc calling.
+              </div>
+              <div className="p-3 rounded-lg bg-card/80 border border-border/40">
+                <span className="font-semibold text-foreground">Nhóm lớp tốt:</span>{" "}
+                eating (0.91), running (0.90), sleeping (0.83), fighting (0.82) - 
+                các hành động có chuyển động hoặc tư thế đặc trưng rõ ràng.
+              </div>
             </div>
           </div>
 

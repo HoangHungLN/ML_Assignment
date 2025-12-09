@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import { Card } from "./ui/card";
 import { MLPresentation } from "./MLPresentation";
 import { HMMParameterLearning } from "./HMMParameterLearning";
+import { Assignment2Presentation } from "./Assignment2Presentation";
 
 interface AssignmentTabsProps {
   assignment1: string;
@@ -19,7 +20,7 @@ export const AssignmentTabs = ({
   assignment3,
   extension,
 }: AssignmentTabsProps) => {
-  const [activeTab, setActiveTab] = useState("assignment1");
+  const [activeTab, setActiveTab] = useState<string>("assignment1");
 
   const assignments = [
     { id: "assignment1", label: "Assignment 1", content: assignment1 },
@@ -36,7 +37,7 @@ export const AssignmentTabs = ({
             <TabsTrigger
               key={assignment.id}
               value={assignment.id}
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-semibold py-3 px-6 transition-all duration-300 hover:bg-primary/10"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-sm md:text-base font-semibold py-3 px-6 transition-all duration-300 hover:bg-primary/10"
             >
               {assignment.label}
             </TabsTrigger>
@@ -44,17 +45,29 @@ export const AssignmentTabs = ({
         </TabsList>
 
         {assignments.map((assignment) => (
-          <TabsContent key={assignment.id} value={assignment.id} className="mt-8">
+          <TabsContent
+            key={assignment.id}
+            value={assignment.id}
+            className="mt-8"
+          >
             {assignment.id === "assignment1" ? (
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
                 <MLPresentation />
               </Card>
+            ) : assignment.id === "assignment2" ? (
+              <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
+                <Assignment2Presentation markdown={assignment.content} />
+              </Card>
             ) : assignment.id === "extension" ? (
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
                 {(() => {
-                  const content = assignment.content || "*Nội dung đang được cập nhật...*";
-                  const forwardAlgoMatch = content.match(/^([\s\S]*?)(#{1,3}\s*Forward Algorithm[\s\S]*)$/m);
-                  
+                  const content =
+                    assignment.content ||
+                    "*Nội dung đang được cập nhật...*";
+                  const forwardAlgoMatch = content.match(
+                    /^([\s\S]*?)(#{1,3}\s*Forward Algorithm[\s\S]*)$/m
+                  );
+
                   if (forwardAlgoMatch) {
                     const [, beforeForward, forwardAndAfter] = forwardAlgoMatch;
                     return (
@@ -73,7 +86,7 @@ export const AssignmentTabs = ({
                       </>
                     );
                   }
-                  
+
                   return (
                     <>
                       <div className="markdown-content">
@@ -90,7 +103,8 @@ export const AssignmentTabs = ({
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
                 <div className="markdown-content">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {assignment.content || "*Nội dung đang được cập nhật...*"}
+                    {assignment.content ||
+                      "*Nội dung đang được cập nhật...*"}
                   </ReactMarkdown>
                 </div>
               </Card>

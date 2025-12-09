@@ -6,6 +6,7 @@ import { Card } from "./ui/card";
 import { MLPresentation } from "./MLPresentation";
 import { HMMParameterLearning } from "./HMMParameterLearning";
 import { Assignment2Presentation } from "./Assignment2Presentation";
+import { Assignment3Presentation } from "./Assignment3Presentation";
 
 interface AssignmentTabsProps {
   assignment1: string;
@@ -57,6 +58,10 @@ export const AssignmentTabs = ({
             ) : assignment.id === "assignment2" ? (
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
                 <Assignment2Presentation markdown={assignment.content} />
+              </Card>
+            ) : assignment.id === "assignment3" ? (
+              <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
+                <Assignment3Presentation />
               </Card>
             ) : assignment.id === "extension" ? (
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">

@@ -8,7 +8,6 @@ import { HMMParameterLearning } from "./HMMParameterLearning";
 import { Assignment2Presentation } from "./Assignment2Presentation";
 import { Assignment3Presentation } from "./Assignment3Presentation";
 import { Assignment1Part1 } from "./Assignment1Part1";
-
 interface AssignmentTabsProps {
   assignment1: string;
   assignment2: string;

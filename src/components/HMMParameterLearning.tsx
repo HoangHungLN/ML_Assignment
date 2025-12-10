@@ -1,127 +1,208 @@
-import { Database, Calculator, Grid3X3 } from "lucide-react";
-import { Card } from "./ui/card";
+// src/components/HMMParameterLearning.tsx
+import React, { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./ui/card";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
+import { Badge } from "./ui/badge";
+import {
+  Brain,
+  Type,
+  Loader2,
+  AlertTriangle,
+  GitBranch,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { tagSentence } from "../hmm/hmmLocal"; // đường import tuỳ folder của cậu
 
-export const HMMParameterLearning = () => {
-  const steps = [
-    {
-      step: 1,
-      title: "Xây dựng bộ từ điển (Vocabulary & States)",
-      icon: Database,
-      content: (
-        <>
-          Hệ thống duyệt qua tập Train Data để trích xuất tập nhãn <strong>Q</strong> (Hidden States) và tập từ vựng <strong>V</strong>. 
-          Để xử lý các từ hiếm (Rare words) xuất hiện ≤ 1 lần, hệ thống quy hoạch chúng về token đặc biệt <code className="bg-primary/20 px-1.5 py-0.5 rounded text-primary font-mono text-sm">&lt;UNK&gt;</code>. 
-          Điều này giúp mô hình xử lý được các từ chưa gặp (Out-of-vocabulary) trong thực tế.
-        </>
-      ),
-    },
-    {
-      step: 2,
-      title: "Cơ chế học (Counting & Smoothing)",
-      icon: Calculator,
-      content: (
-        <>
-          Tham số được ước lượng dựa trên tần suất xuất hiện (Frequency Counting) của các cặp nhãn và cặp từ-nhãn. 
-          Nhóm áp dụng kỹ thuật <strong>Add-1 Smoothing</strong> (Laplace) vào công thức tính xác suất để tránh lỗi chia cho 0 (Zero Probability) 
-          đối với các trường hợp chưa xuất hiện trong tập huấn luyện.
-        </>
-      ),
-    },
-    {
-      step: 3,
-      title: "Ma trận trọng số (The Learned Matrices)",
-      icon: Grid3X3,
-      content: null,
-      matrices: true,
-    },
-  ];
+interface ViterbiResult {
+  tokens: string[];
+  tags: string[];
+  viterbiLogProb?: number;
+}
+
+const ViterbiTaggingDemo: React.FC = () => {
+  const [sentence, setSentence] = useState("");
+  const [result, setResult] = useState<ViterbiResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleTag = async () => {
+    const trimmed = sentence.trim();
+    if (!trimmed) {
+      setError("Hãy nhập một câu tiếng Anh để gán nhãn.");
+      setResult(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = tagSentence(trimmed);
+      setResult({
+        tokens: res.tokens,
+        tags: res.tags,
+        viterbiLogProb: res.viterbiLogProb,
+      });
+    } catch (e) {
+      console.error(e);
+      setError("Có lỗi khi chạy Viterbi trên frontend.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="mt-12 pt-8 border-t border-border/50">
-      {/* Section Header */}
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-foreground mb-2">
-          Phần 1: Học tham số mô hình (Parameter Learning)
-        </h3>
-        <p className="text-muted-foreground">
-          Quá trình huấn luyện HMM theo phương pháp Supervised Learning
-        </p>
-      </div>
+    <Card className="bg-card/60 border-border/60">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-base">
+          Demo thuật toán Viterbi – gán nhãn từ loại
+        </CardTitle>
+        <CardDescription className="text-xs">
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-foreground flex items-center gap-2">
+            <Type className="w-3 h-3 text-primary" />
+            Câu cần gán nhãn
+          </label>
+          <Textarea
+            rows={2}
+            className="bg-background/60 border-border/70 focus-visible:ring-primary/70 text-xs"
+            placeholder='Ví dụ: "The quick brown fox jumps over the lazy dog."'
+            value={sentence}
+            onChange={(e) => setSentence(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                handleTag();
+              }
+            }}
+          />
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>Ctrl+Enter / Cmd+Enter để chạy nhanh.</span>
+            <Button
+              size="sm"
+              className="h-7 px-3 text-xs"
+              onClick={handleTag}
+              disabled={loading}
+            >
+              {loading && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+              Gán nhãn
+            </Button>
+          </div>
+        </div>
 
-      {/* Steps Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {steps.map((step) => (
-          <Card
-            key={step.step}
-            className="p-6 bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300"
-          >
-            {/* Step Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
-                <step.icon className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                Step {step.step}
-              </span>
-            </div>
+        {error && (
+          <div className="flex items-start gap-2 rounded-xl border border-destructive/60 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+            <AlertTriangle className="w-3 h-3 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
 
-            {/* Step Title */}
-            <h4 className="text-lg font-semibold text-foreground mb-3">
-              {step.title}
-            </h4>
-
-            {/* Step Content */}
-            {step.content && (
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {step.content}
+        {result && (
+          <div className="space-y-3">
+            {typeof result.viterbiLogProb === "number" && (
+              <p className="text-[11px] text-muted-foreground">
+                Viterbi log-probability:{" "}
+                <span className="font-mono">
+                  {result.viterbiLogProb.toFixed(3)}
+                </span>
               </p>
             )}
 
-            {/* Matrices Display for Step 3 */}
-            {step.matrices && (
-              <div className="space-y-4">
-                {/* Matrix A */}
-                <div className="p-4 rounded-lg bg-background/50 border border-border/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-primary font-mono font-bold">Matrix A</span>
-                    <span className="text-muted-foreground text-sm">(Transition)</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Mô tả xác suất chuyển từ nhãn này sang nhãn khác
-                  </p>
-                  <code className="block mt-2 text-xs text-primary/80 font-mono">
-                    P(Verb | Noun)
-                  </code>
-                </div>
+            <div className="overflow-x-auto rounded-2xl border border-border/70 bg-background/40">
+              <table className="min-w-full text-xs">
+                <thead className="bg-background/80">
+                  <tr className="text-left border-b border-border/50">
+                    <th className="px-3 py-2 font-medium text-muted-foreground">
+                      #
+                    </th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">
+                      Token
+                    </th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">
+                      POS Tag
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.tokens.map((tok, idx) => (
+                    <tr
+                      key={`${tok}-${idx}`}
+                      className="border-t border-border/40 hover:bg-background/60 transition-colors"
+                    >
+                      <td className="px-3 py-2 text-muted-foreground font-mono">
+                        {idx + 1}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-foreground">
+                        {tok}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-[11px] border-primary/60 text-primary"
+                        >
+                          {result.tags[idx]}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-                {/* Matrix B */}
-                <div className="p-4 rounded-lg bg-background/50 border border-border/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-primary font-mono font-bold">Matrix B</span>
-                    <span className="text-muted-foreground text-sm">(Emission)</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Mô tả xác suất sinh ra từ từ một nhãn
-                  </p>
-                  <code className="block mt-2 text-xs text-primary/80 font-mono">
-                    P('apple' | Noun)
-                  </code>
-                </div>
+            <p className="text-[11px] text-muted-foreground">
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
-                {/* Initial π */}
-                <div className="p-4 rounded-lg bg-background/50 border border-border/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-primary font-mono font-bold">Initial π</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Xác suất nhãn khởi đầu câu
-                  </p>
-                </div>
-              </div>
-            )}
-          </Card>
-        ))}
-      </div>
+export const HMMParameterLearning: React.FC = () => {
+  const summaryMarkdown = `
+### Học tham số HMM (Supervised)
+
+Từ tập dữ liệu đã gán nhãn, ta ước lượng:
+
+- \\(\\pi\\): tần suất xuất hiện tag ở vị trí đầu câu  
+- \\(A\\): xác suất chuyển từ tag này sang tag khác  
+- \\(B\\): xác suất một tag sinh ra một từ cụ thể  
+
+Các tham số này được serialize sang JSON và nhúng vào frontend để thuật toán **Viterbi** sử dụng trực tiếp.
+  `;
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-card/60 border-border/60">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Brain className="w-4 h-4 text-primary" />
+            Học tham số HMM từ dữ liệu gán nhãn
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Tham số được export sang JSON, dùng lại ở phía client.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {summaryMarkdown}
+          </ReactMarkdown>
+        </CardContent>
+      </Card>
+
+      <ViterbiTaggingDemo />
     </div>
   );
 };

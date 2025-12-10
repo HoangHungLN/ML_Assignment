@@ -7,6 +7,7 @@ import { MLPresentation } from "./MLPresentation";
 import { HMMParameterLearning } from "./HMMParameterLearning";
 import { Assignment2Presentation } from "./Assignment2Presentation";
 import { Assignment3Presentation } from "./Assignment3Presentation";
+import { Assignment1Part1 } from "./Assignment1Part1";
 
 interface AssignmentTabsProps {
   assignment1: string;
@@ -52,10 +53,18 @@ export const AssignmentTabs = ({
             className="mt-8"
           >
             {assignment.id === "assignment1" ? (
-              <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
-                <MLPresentation />
-              </Card>
-            ) : assignment.id === "assignment2" ? (
+  <div className="space-y-8">
+    {/* Phần 1: EDA & Preprocessing (Mới thêm) */}
+    <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
+       <Assignment1Part1 />
+    </Card>
+
+    {/* Phần 2: Model & Kết quả (Giữ lại cái cũ tạm thời) */}
+    <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
+       <MLPresentation />
+    </Card>
+  </div>
+) : assignment.id === "assignment2" ? (
               <Card className="p-8 bg-card/30 backdrop-blur-sm border-border/50">
                 <Assignment2Presentation markdown={assignment.content} />
               </Card>

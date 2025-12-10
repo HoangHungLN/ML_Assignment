@@ -777,7 +777,7 @@ export const Assignment1Part1 = () => {
             <Card className="bg-card/30 border-border/50">
               <CardContent className="p-6 flex justify-center items-center">
                 <img
-                  src="/images/CorrelationMatrixAssignment1.png"
+                  src={`${import.meta.env.BASE_URL}images/CorrelationMatrixAssignment1.png`}
                   alt="Correlation Matrix of numeric features (spec_score, ram_num, rom_num, price)"
                   className="w-full max-w-md rounded-md border border-border/40 object-contain shadow-sm"
                 />

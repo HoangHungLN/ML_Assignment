@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -8,7 +6,6 @@ import {
   CardTitle,
   CardDescription,
 } from "./ui/card";
-import { Button } from "./ui/button";
 import {
   BarChart as RechartsBarChart,
   Bar,
@@ -27,6 +24,7 @@ import {
   Sparkles,
   TrendingUp,
   Target,
+  Activity,
 } from "lucide-react";
 
 const labelStats = [
@@ -49,16 +47,75 @@ const COLORS = [
   "hsl(var(--primary))",
   "hsl(var(--ai-glow))",
 ];
+const METRIC_COLORS = {
+  precision: "hsl(var(--ai-glow))",
+  recall: "hsl(var(--primary))",
+  f1: "hsl(var(--accent))",
+};
+// Kết quả best model: Logistic Regression + BoW
+const BEST_MODEL_ACCURACY = 0.8649665551839465; // ~86.5%
+
+// Precision / Recall / F1 cho từng nhãn của Logistic Regression + BoW
+const perClassMetrics = [
+  {
+    label: "Access",
+    precision: 0.92,
+    recall: 0.9,
+    f1: 0.91,
+  },
+  {
+    label: "Administrative rights",
+    precision: 0.88,
+    recall: 0.69,
+    f1: 0.77,
+  },
+  {
+    label: "HR Support",
+    precision: 0.87,
+    recall: 0.87,
+    f1: 0.87,
+  },
+  {
+    label: "Hardware",
+    precision: 0.82,
+    recall: 0.88,
+    f1: 0.85,
+  },
+  {
+    label: "Internal Project",
+    precision: 0.89,
+    recall: 0.81,
+    f1: 0.85,
+  },
+  {
+    label: "Miscellaneous",
+    precision: 0.83,
+    recall: 0.83,
+    f1: 0.83,
+  },
+  {
+    label: "Purchase",
+    precision: 0.97,
+    recall: 0.9,
+    f1: 0.93,
+  },
+  {
+    label: "Storage",
+    precision: 0.94,
+    recall: 0.89,
+    f1: 0.92,
+  },
+];
 
 const models = [
   {
     name: "Logistic Regression",
     icon: Target,
     bestCombo: "Bag of Words (BoW)",
-    accuracy: "86.50%",
+    accuracy: "86.5%",
     role: "Mô hình tốt nhất",
     summary:
-      "Hoạt động rất tốt trên dữ liệu thưa, chiều cao sinh ra từ BoW. Regularization với C = 0.1 giúp tránh overfitting.",
+      "Hoạt động rất tốt trên dữ liệu thưa sinh ra từ BoW. Regularization với C = 0.1 giúp tránh overfitting.",
     bullets: [
       "Best combo: BoW + Logistic Regression",
       "Phù hợp dữ liệu text ngắn, nhiều từ khóa kỹ thuật",
@@ -69,10 +126,10 @@ const models = [
     name: "Linear SVM (LinearSVC)",
     icon: TrendingUp,
     bestCombo: "BoW / TF–IDF",
-    accuracy: "Khá cao, thấp hơn LR một chút",
+    accuracy: "≈ 85.7%",
     role: "Đối thủ mạnh",
     summary:
-      "Linear SVM cho biên quyết định sắc nét trên không gian chiều cao, nhưng nhạy hơn với nhiễu và cần tuning C cẩn thận.",
+      "Linear SVM cho biên quyết định sắc nét trên không gian chiều cao, hiệu năng rất gần Logistic Regression.",
     bullets: [
       "Hiệu năng gần sát Logistic Regression trong nhiều cấu hình",
       "Ưu điểm trên dữ liệu tuyến tính phân tách rõ",
@@ -82,28 +139,26 @@ const models = [
   {
     name: "Naive Bayes (MultinomialNB)",
     icon: Layers,
-    bestCombo: "BoW / TF–IDF",
-    accuracy: "Ổn, nhưng thấp hơn LR & SVM",
+    bestCombo: "TF–IDF",
+    accuracy: "≈ 80.0%",
     role: "Baseline nhẹ",
     summary:
-      "Giả định độc lập điều kiện giữa các từ, huấn luyện cực nhanh, phù hợp làm baseline và chạy thử nghiệm nhanh.",
+      "Giả định độc lập điều kiện giữa các từ, huấn luyện cực nhanh, phù hợp làm baseline và thử nghiệm nhanh.",
     bullets: [
       "Thời gian train & predict rất nhanh",
       "Hiệu quả tốt với dữ liệu nhiều từ khóa đặc trưng",
-      "Độ chính xác thấp hơn Logistic Regression & SVM theo biểu đồ so sánh",
+      "Độ chính xác thấp hơn Logistic Regression & SVM theo đánh giá trên test set",
     ],
   },
 ];
 
 interface Assignment2PresentationProps {
-  markdown?: string;
+  markdown?: string; // vẫn để prop cho hợp với AssignmentTabs, nhưng không dùng nữa
 }
 
 export const Assignment2Presentation: React.FC<
   Assignment2PresentationProps
-> = ({ markdown }) => {
-  const [showRawDetail, setShowRawDetail] = useState(false);
-
+> = () => {
   const minorityClasses = labelStats.filter((c) => c.ratio < 8);
   const majorityClasses = labelStats.filter((c) => c.ratio > 20);
 
@@ -230,7 +285,7 @@ export const Assignment2Presentation: React.FC<
         </Card>
       </div>
 
-      {/* 🔻 BIỂU ĐỒ PHÂN PHỐI NHÃN – đặt ngay dưới 3 card trên */}
+      {/* Biểu đồ phân phối nhãn */}
       <Card className="bg-card/60 border-border/60">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
@@ -248,7 +303,7 @@ export const Assignment2Presentation: React.FC<
             <RechartsBarChart
               data={labelStats}
               layout="vertical"
-              margin={{ top: 16, right: 24, bottom: 8, left: 120 }}
+              margin={{ top: 16, right: 24, bottom: 8, left: 140 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -263,7 +318,7 @@ export const Assignment2Presentation: React.FC<
                 type="category"
                 dataKey="topic"
                 stroke="hsl(var(--muted-foreground))"
-                width={120}
+                width={140}
               />
               <Tooltip
                 formatter={(value: number, _name, props) => {
@@ -299,7 +354,7 @@ export const Assignment2Presentation: React.FC<
         </CardContent>
       </Card>
 
-      {/* Workflow 3 bước */}
+      {/* Workflow 3 bước: tiền xử lý + trích xuất đặc trưng */}
       <div className="grid md:grid-cols-3 gap-6">
         <Card className="bg-card/60 border-border/60 hover:border-primary/40 transition-all duration-300">
           <CardHeader className="space-y-2">
@@ -323,8 +378,8 @@ export const Assignment2Presentation: React.FC<
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <ul className="list-disc list-inside space-y-1">
               <li>Xác định 8 nhóm chủ đề làm nhãn.</li>
-              <li>Hiểu rõ nghiệp vụ từng nhóm ticket.</li>
-              <li>Đặt tiêu chí đánh giá: accuracy, F1 theo lớp,…</li>
+              <li>Hiểu rõ nghiệp vụ & từ khóa đặc trưng từng nhóm.</li>
+              <li>Đặt tiêu chí: Accuracy, F1 macro & weighted.</li>
             </ul>
           </CardContent>
         </Card>
@@ -335,24 +390,32 @@ export const Assignment2Presentation: React.FC<
               <span className="h-5 w-5 rounded-full border border-primary flex items-center justify-center">
                 2
               </span>
-              Data & Features
+              Preprocessing & Features
             </div>
             <div className="flex items-center gap-3">
               <Layers className="w-6 h-6 text-primary" />
               <CardTitle className="text-lg">
-                Tiền xử lý & biểu diễn văn bản
+                Tiền xử lý & trích xuất đặc trưng
               </CardTitle>
             </div>
             <CardDescription>
-              Làm sạch text và sinh đặc trưng BoW / TF–IDF / TF–IDF Weighted
-              GloVe.
+              Làm sạch text và sinh đặc trưng BoW / TF–IDF / TF–IDF GloVe.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <ul className="list-disc list-inside space-y-1">
-              <li>Chuẩn hóa chữ, tokenization, loại bỏ stopwords.</li>
-              <li>Xây dựng lớp <code>TextPreprocessor</code> linh hoạt.</li>
-              <li>Trích xuất đặc trưng bằng BoW, TF–IDF, TF–IDF GloVe.</li>
+              <li>
+                Làm sạch: lower-case, xoá HTML/ký tự thừa, chuẩn hóa khoảng
+                trắng.
+              </li>
+              <li>
+                Tách từ & loại stopwords tiếng Anh; encode nhãn từ tên nhóm
+                sang số 0–7.
+              </li>
+              <li>
+                Trích xuất BoW, TF–IDF và TF–IDF weighted GloVe thông qua lớp{" "}
+                <code>TextPreprocessor</code> để dễ tái sử dụng.
+              </li>
             </ul>
           </CardContent>
         </Card>
@@ -377,18 +440,20 @@ export const Assignment2Presentation: React.FC<
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <ul className="list-disc list-inside space-y-1">
-              <li>Chia train/validation/test, giữ phân phối nhãn ổn.</li>
-              <li>Tuning hyperparameters cho từng mô hình.</li>
+              <li>Chia train / validation / test theo tỉ lệ cố định.</li>
               <li>
-                Đánh giá bằng Accuracy, Precision, Recall, F1; phân tích lớp
-                khó.
+                Grid search đơn giản trên hyperparameters (alpha, C, max_iter).
+              </li>
+              <li>
+                Chọn mô hình theo validation accuracy, sau đó đánh giá chi tiết
+                trên test bằng classification report.
               </li>
             </ul>
           </CardContent>
         </Card>
       </div>
 
-      {/* Models */}
+      {/* Models overview */}
       <Card className="bg-card/60 border-border/60">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4">
           <div>
@@ -403,7 +468,7 @@ export const Assignment2Presentation: React.FC<
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-3 py-1">
             <Target className="w-4 h-4 text-primary" />
             <span className="text-xs font-mono text-primary">
-              Best: LR + BoW (86.50%)
+              Best: LR + BoW (≈{(BEST_MODEL_ACCURACY * 100).toFixed(1)}%)
             </span>
           </div>
         </CardHeader>
@@ -446,35 +511,206 @@ export const Assignment2Presentation: React.FC<
         </CardContent>
       </Card>
 
-      {/* Markdown chi tiết (gốc) */}
-      {markdown && (
-        <Card className="bg-card/40 border-border/40">
-          <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <CardTitle className="text-lg">
-                Báo cáo chi tiết Assignment 2
-              </CardTitle>
+      {/* Nhận xét & đánh giá – giống style Assigment 1 */}
+      <Card className="bg-card/60 border-border/60">
+        <CardHeader className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full border border-primary/40 bg-primary/10 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-primary" />
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowRawDetail((v) => !v)}
-              className="shrink-0"
-            >
-              {showRawDetail ? "Ẩn nội dung chi tiết" : "Xem chi tiết gốc"}
-            </Button>
-          </CardHeader>
-          {showRawDetail && (
-            <CardContent>
-              <div className="markdown-content prose prose-sm md:prose-base max-w-none prose-invert">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {markdown}
-                </ReactMarkdown>
+            <div>
+              <CardTitle className="text-xl">Nhận xét và đánh giá</CardTitle>
+              <CardDescription>
+                Phân tích chi tiết kết quả mô hình tốt nhất: Logistic
+                Regression + BoW.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Overall accuracy */}
+          <div className="rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <Target className="w-4 h-4 text-primary" />
               </div>
-            </CardContent>
-          )}
-        </Card>
-      )}
+              <div>
+                <p className="text-sm font-semibold text-primary">
+                  Overall Accuracy: {(BEST_MODEL_ACCURACY * 100).toFixed(1)}%
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Mô hình Logistic Regression + BoW đạt độ chính xác tổng thể
+                  khoảng{" "}
+                  {(BEST_MODEL_ACCURACY * 100).toFixed(1)}% trên tập test
+                  gồm 4,784 mẫu.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* High-level comments */}
+          <div className="grid md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4">
+              <p className="font-semibold text-foreground mb-1">
+                Lớp tốt nhất
+              </p>
+              <p>
+                <span className="font-semibold">Purchase</span> đạt F1-score{" "}
+                <span className="font-semibold">0.93</span>, cho thấy các yêu
+                cầu liên quan đến mua sắm (đặt hàng, license, gia hạn…) có đặc
+                trưng từ khóa rất rõ ràng, mô hình phân biệt tốt.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4">
+              <p className="font-semibold text-foreground mb-1">
+                Lớp khó nhất
+              </p>
+              <p>
+                <span className="font-semibold">Administrative rights</span> chỉ
+                đạt F1-score <span className="font-semibold">0.77</span>. Nhóm
+                này dễ bị nhầm với <span className="font-semibold">Access</span>{" "}
+                hoặc <span className="font-semibold">Miscellaneous</span> do mô
+                tả quyền truy cập/phân quyền khá tương đồng.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4">
+              <p className="font-semibold text-foreground mb-1">
+                Nhóm lớp hoạt động tốt
+              </p>
+              <p>
+                Các nhóm <span className="font-semibold">Access</span>,{" "}
+                <span className="font-semibold">HR Support</span>,{" "}
+                <span className="font-semibold">Hardware</span> và{" "}
+                <span className="font-semibold">Storage</span> đều có F1-score{" "}
+                &gt; 0.85. Đây là các ticket có nội dung tương đối đồng nhất
+                (hardware error, hỗ trợ nhân sự, lưu trữ), mô hình nắm bắt tốt
+                pattern từ khóa.
+              </p>
+            </div>
+          </div>
+
+          {/* Chart Precision / Recall / F1 theo lớp */}
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-foreground">
+              Chi tiết Precision / Recall / F1-score theo lớp (Logistic
+              Regression + BoW)
+            </p>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsBarChart
+                  data={perClassMetrics}
+                  margin={{ top: 16, right: 24, bottom: 40, left: 16 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                  />
+                  <XAxis
+                    dataKey="label"
+                    stroke="hsl(var(--muted-foreground))"
+                    angle={-30}
+                    textAnchor="end"
+                    interval={0}
+                  />
+                  <YAxis
+                    domain={[0, 1]}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <Tooltip
+                    formatter={(value: number, name) => [
+                      value.toFixed(2),
+                      name,
+                    ]}
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      borderColor: "hsl(var(--border))",
+                      borderRadius: 8,
+                    }}
+                  />
+                  <Bar
+                    dataKey="precision"
+                    name="Precision"
+                    radius={[4, 4, 0, 0]}
+                    fill={METRIC_COLORS.precision}
+                  />
+                  <Bar
+                    dataKey="recall"
+                    name="Recall"
+                    radius={[4, 4, 0, 0]}
+                    fill={METRIC_COLORS.recall}
+                  />
+                  <Bar
+                    dataKey="f1"
+                    name="F1-score"
+                    radius={[4, 4, 0, 0]}
+                    fill={METRIC_COLORS.f1}
+                  />
+                </RechartsBarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tổng kết Assignment 2 */}
+      <Card className="bg-card/60 border-border/60">
+        <CardHeader>
+          <CardTitle className="text-xl">Tổng kết Assignment 2</CardTitle>
+          <CardDescription>
+            Đánh giá lại toàn bộ pipeline phân loại ticket IT và định hướng
+            phát triển tiếp theo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-3 gap-6 text-sm text-muted-foreground">
+          <div className="space-y-2">
+            <h3 className="font-semibold text-foreground">Mục tiêu</h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Xây dựng pipeline chuẩn cho phân loại ticket IT.</li>
+              <li>Phân tích rõ phân phối nhãn & mức độ mất cân bằng.</li>
+              <li>
+                So sánh nhiều mô hình / đặc trưng để chọn baseline mạnh cho
+                các bài toán tiếp theo.
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-foreground">Kết quả chính</h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>
+                Dataset gồm <b>47,837</b> ticket, <b>8</b> nhóm chủ đề.
+              </li>
+              <li>
+                <b>Hardware</b> &amp; <b>HR Support</b> là hai lớp chiếm tỉ lệ
+                lớn nhất (&gt; 50% tổng dataset).
+              </li>
+              <li>
+                Best model: <b>Logistic Regression + BoW</b>, Accuracy ≈{" "}
+                {(BEST_MODEL_ACCURACY * 100).toFixed(1)}%.
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-foreground">
+              Bài học & hướng phát triển
+            </h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>
+                Mất cân bằng lớp ảnh hưởng đáng kể tới nhóm{" "}
+                <b>Administrative rights</b> → cần thử class weighting /
+                oversampling.
+              </li>
+              <li>
+                Feature sparse (BoW, TF–IDF) vẫn rất hiệu quả cho ticket ngắn;
+                GloVe chưa vượt được baseline.
+              </li>
+              <li>
+                Bước tiếp theo: thử fine-tune transformer (BERT, RoBERTa…) và
+                so sánh với baseline Logistic Regression + BoW.
+              </li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
